@@ -13,6 +13,10 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Constraints
@@ -48,7 +52,9 @@ fun MyConstraintLayout() {
         "Yogurt" to 150
     )
 
-    var listAlimentos = alimentos.toList()
+    var listAlimentos1 by remember { mutableStateOf(alimentos.toList()) }
+    var listAlimentos2 by remember { mutableStateOf<List<Pair<String, Int>>>(emptyList()) }
+    var totalCalorias by remember { mutableStateOf("Alimentos y Calorías") }
 
     ConstraintLayout(
         modifier = Modifier.fillMaxSize()
@@ -57,7 +63,7 @@ fun MyConstraintLayout() {
         val startGuideLine = createGuidelineFromTop(0.05f)
 
         Text(
-            "Alimentos y calorías", modifier = Modifier
+            totalCalorias, modifier = Modifier
                 .constrainAs(text1) {
                     top.linkTo(startGuideLine)
                     centerHorizontallyTo(parent)
@@ -66,7 +72,8 @@ fun MyConstraintLayout() {
         )
 
         Button(onClick = {
-
+            listAlimentos1 = alimentos.toList()
+            listAlimentos2 = emptyList()
         }, modifier = Modifier.constrainAs(button1) {
             top.linkTo(text1.bottom)
             centerHorizontallyTo(parent)
@@ -75,6 +82,8 @@ fun MyConstraintLayout() {
         }
 
         Button(onClick = {
+            listAlimentos1 = alimentos.filter { it.value < 500 }.toList()
+            listAlimentos2 = alimentos.filter { it.value >= 500 }.toList()
 
         }, modifier = Modifier.constrainAs(button2) {
             top.linkTo(button1.bottom)
@@ -84,7 +93,8 @@ fun MyConstraintLayout() {
         }
 
         Button(onClick = {
-
+            val totalCal = alimentos.values.sum()
+            totalCalorias = "Total de calorías: $totalCal"
         }, modifier = Modifier.constrainAs(button3) {
             top.linkTo(button2.bottom)
             centerHorizontallyTo(parent)
@@ -92,7 +102,10 @@ fun MyConstraintLayout() {
             Text("Calcular Total de calorías")
         }
 
-        Button(onClick = {}, modifier = Modifier.constrainAs(button4) {
+        Button(onClick = {
+            listAlimentos1 = alimentos.filter { it.value > 500 }.toList()
+            listAlimentos2 = emptyList()
+        }, modifier = Modifier.constrainAs(button4) {
             top.linkTo(button3.bottom)
             centerHorizontallyTo(parent)
         }) {
@@ -107,7 +120,7 @@ fun MyConstraintLayout() {
                 .padding(vertical = 64.dp, horizontal = 16.dp)
                 .width(150.dp)
         ) {
-            items(listAlimentos.toList()) { (alimento, calorias) ->
+            items(listAlimentos1.toList()) { (alimento, calorias) ->
                 Text(text = "$alimento: $calorias calorías")
             }
         }
@@ -120,8 +133,14 @@ fun MyConstraintLayout() {
                 .padding(vertical = 64.dp, horizontal = 16.dp)
                 .width(150.dp)
         ) {
-            items(listAlimentos.toList()) { (alimento, calorias) ->
-                Text(text = "$alimento: $calorias calorías")
+            if (listAlimentos2.isEmpty()) {
+                items(listOf(Pair("", ""))) { (alimento, calorias) ->
+                    Text(text = "")
+                }
+            } else {
+                items(listAlimentos2.toList()) { (alimento, calorias) ->
+                    Text(text = "$alimento: $calorias calorías")
+                }
             }
         }
     }
